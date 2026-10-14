@@ -16,7 +16,7 @@ nineouting 백엔드 서비스들이 함께 쓰는 공통 모듈.
 | `event-contract` | 이벤트 봉투(`EventEnvelope`)와 이벤트별 내용. 런타임 의존성 없음 | v0.2.0 |
 | `outbox` | Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 Kafka로 전송 (보내면 삭제) | v0.2.0 |
 | `inbox` | Inbox: Kafka로 받은 이벤트를 DB에 먼저 저장(중복 제거)하고 처리기에 넘김 (실패 시 재시도) | v0.3.0 |
-| `client-common` | 서비스 간 REST 호출 + 재시도·차단 | 서비스 간 호출이 처음 생길 때 추가 |
+| `client-common` | 서비스 간 조회: user-service 사용자 정보(`UserClient`), workspace-service 폴더 권한(`WorkspaceClient`) | v0.4.0 |
 
 ## 서비스에서 쓰는 방법
 
@@ -211,3 +211,22 @@ Kafka로 받은 이벤트를 **먼저 DB(inbox)에 저장**하고, 별도 작업
 | `nineouting.inbox.max-attempts` | `10` |
 | `nineouting.inbox.max-retry-delay` | `5m` |
 | `nineouting.inbox.retention` | `7d` |
+
+## client-common 설정
+
+서비스 간 조회(`/internal/**`)를 하는 부품. 주소를 설정한 서비스의 부품만 만든다.
+
+```yaml
+nineouting:
+  clients:
+    user-service-url: ${USER_SERVICE_URL:http://localhost:8081}            # → UserClient
+    workspace-service-url: ${WORKSPACE_SERVICE_URL:http://localhost:8082}  # → WorkspaceClient
+```
+
+| 부품 | 메서드 | 실패 |
+|------|--------|------|
+| `UserClient` | `findUsers(ids)` → `Map<userId, UserSummary>` (100명씩 나눠 요청, 없는 사용자는 빠짐) | 연결 불가 → `503 USER_SERVICE_UNAVAILABLE` |
+| `WorkspaceClient` | `access(folderId, userId)`, `folderMembers(folderId)`, `accessibleFolders(userId)` | 없는 폴더 → `404 NOT_FOUND`, 연결 불가 → `503 WORKSPACE_SERVICE_UNAVAILABLE` |
+
+- 서비스에 `spring-boot-starter-restclient`가 있어야 한다 (추적 헤더가 자동으로 붙는다).
+- 테스트에서는 `@MockitoBean UserClient`처럼 가짜로 바꿔 쓴다.
