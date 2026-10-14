@@ -1,0 +1,18 @@
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management'
+}
+
+// 이벤트 형식만 담는다. 어떤 서비스·언어에서도 같은 JSON으로 읽을 수 있도록 런타임 의존성을 두지 않는다.
+// BOM은 테스트 라이브러리 버전을 다른 모듈과 맞추는 데만 쓴다.
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.boot:spring-boot-dependencies:4.1.0'
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}

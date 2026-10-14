@@ -13,8 +13,8 @@ nineouting 백엔드 서비스들이 함께 쓰는 공통 모듈.
 | `web-common` | 공통 응답 `{ success, data, message }`, 공통 예외·에러 코드, 전역 예외 처리 | 준비 중 (v0.1.0) |
 | `security-common` | JWT 검증 (공개키 JWKS 방식). 발급자 `user-service`는 쓰지 않는다 | 준비 중 (v0.1.0) |
 | `observability` | JSON 로그 형식, trace ID 로그 출력, 분산 추적 설정 | 준비 중 (v0.1.0) |
-| `event-contract` | Kafka 이벤트 봉투와 이벤트별 내용 | workspace-service 개발 시 추가 |
-| `outbox` | Transactional Outbox (Kafka·REST 전송) | workspace·meeting·minutes 개발 시 추가 |
+| `event-contract` | 이벤트 봉투(`EventEnvelope`)와 이벤트별 내용. 런타임 의존성 없음 | v0.2.0 |
+| `outbox` | Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 Kafka로 전송 | v0.2.0 |
 | `client-common` | 서비스 간 REST 호출 + 재시도·차단 | 서비스 간 호출이 처음 생길 때 추가 |
 
 ## 서비스에서 쓰는 방법
@@ -132,3 +132,37 @@ spring:
 
 - 엔드포인트 경로·수집 방식은 모니터링 담당과 맞춘 값이다. 바꿀 때는 담당자와 먼저 협의한다.
 - `defaults.yml`의 설정 이름은 테스트(`DefaultsPropertyNamesTest`)가 실제 Spring Boot 설정과 대조한다.
+
+## outbox 설정
+
+데이터 변경과 이벤트 기록을 **같은 DB 트랜잭션**에 저장하고, 별도 작업(릴레이)이 Kafka로 보낸다.
+Kafka가 잠시 멈춰도 이벤트가 사라지지 않고, 데이터는 저장됐는데 이벤트만 빠지는 일이 없다.
+
+1. 의존성: `outbox` + `spring-boot-starter-data-jpa` + `spring-boot-starter-kafka`
+2. 테이블: [`outbox/outbox_events.sql`](outbox/src/main/resources/outbox/outbox_events.sql)을 서비스의 Flyway 마이그레이션으로 추가
+3. 사용 (반드시 `@Transactional` 안에서):
+   ```java
+   @Transactional
+   public void request(String email) {
+       // ... 데이터 변경
+       outboxEventWriter.append(PasswordResetRequested.TOPIC, email, PasswordResetRequested.TYPE,
+               new PasswordResetRequested(email, link));
+   }
+   ```
+
+- 엔티티·저장소는 자동 설정이 등록하므로 서비스에 `@EntityScan`을 따로 쓰지 않는다.
+- 릴레이는 1초마다 최대 100건을 보낸다. 실패하면 1초, 2초, 4초 … 최대 5분 간격으로 다시 보내고, 10번 실패하면 `FAILED`로 남긴다.
+- 서비스를 여러 개 띄워도 `SELECT … FOR UPDATE SKIP LOCKED`로 같은 이벤트를 동시에 보내지 않는다.
+- 같은 이벤트가 두 번 갈 수 있다(at-least-once). **받는 쪽은 `eventId`로 중복을 거른다.**
+- 봉투에 W3C `traceparent`가 들어가 받는 쪽에서 추적을 이어 갈 수 있다.
+- 보낸 이벤트는 7일 뒤 지운다(매일 04:00). `FAILED`는 원인 확인을 위해 남긴다.
+
+| 설정 | 기본값 |
+|---|---|
+| `nineouting.outbox.enabled` | `true` |
+| `nineouting.outbox.source` | `spring.application.name` |
+| `nineouting.outbox.relay-interval` | `1s` |
+| `nineouting.outbox.batch-size` | `100` |
+| `nineouting.outbox.max-attempts` | `10` |
+| `nineouting.outbox.max-retry-delay` | `5m` |
+| `nineouting.outbox.retention` | `7d` |
