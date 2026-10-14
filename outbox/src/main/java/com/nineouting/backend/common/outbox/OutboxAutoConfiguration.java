@@ -55,10 +55,4 @@ public class OutboxAutoConfiguration {
     public OutboxRelay outboxRelay(OutboxEventRepository repository, OutboxSender sender, OutboxProperties properties) {
         return new OutboxRelay(repository, sender, properties, Clock.systemUTC());
     }
-
-    @Bean
-    @ConditionalOnMissingBean
-    public OutboxCleaner outboxCleaner(OutboxEventRepository repository, OutboxProperties properties) {
-        return new OutboxCleaner(repository, properties, Clock.systemUTC());
-    }
 }
