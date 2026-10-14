@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/nineOuting/nineouting-common/compare/v0.2.0...v0.3.0) (2026-10-14)
+
+
+### Features
+
+* inbox 모듈 추가, outbox는 보낸 이벤트를 바로 삭제 ([c225f2b](https://github.com/nineOuting/nineouting-common/commit/c225f2b0c9fc354191f6763912de7663570ccf1b))
+* inbox 모듈 추가, outbox는 보낸 이벤트를 바로 삭제 ([0083be4](https://github.com/nineOuting/nineouting-common/commit/0083be4ca92e1b7d6c133b80eee8271fa174bf61))
+* meeting 이벤트 추가 (회의 생성·수정·취소·폴더 이동) ([bba6615](https://github.com/nineOuting/nineouting-common/commit/bba6615c8c1ff8f7238f3c42c4922fec1e294172))
+* meeting 이벤트 추가 (회의 생성·수정·취소·폴더 이동) ([f19f93c](https://github.com/nineOuting/nineouting-common/commit/f19f93c1f1d05d2b8cf3931254fc9ea479f448a2))
+* workspace 이벤트 추가 (참여 요청·승인, 폴더 삭제) ([175e959](https://github.com/nineOuting/nineouting-common/commit/175e95936b6d08226b0ddea5865329214efbf945))
+* workspace 이벤트 추가 (참여 요청·승인, 폴더 삭제) ([42488a1](https://github.com/nineOuting/nineouting-common/commit/42488a1a75bccfdc06b2eb697ffd9014892daa98))
+
 ## [0.2.0](https://github.com/nineOuting/nineouting-common/compare/v0.1.0...v0.2.0) (2026-10-14)
 
 
