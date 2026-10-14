@@ -1,0 +1,34 @@
+# 수동 게시 (비상용). 정규 릴리스는 release-please.yml이 맡는다.
+# 특정 버전을 다시 게시하거나, Release PR 없이 급히 내보내야 할 때만 쓴다.
+name: Publish (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '게시할 버전 (예: 0.1.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Publish
+        run: ./gradlew publish -PreleaseVersion=${{ inputs.version }} --no-daemon --console=plain
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

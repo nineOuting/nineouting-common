@@ -1,0 +1,7 @@
+rootProject.name = 'nineouting-common'
+
+// 서비스는 필요한 모듈만 골라 의존한다 (모듈 ↔ 서비스 표는 README 참고).
+// event-contract, outbox, client-common은 그 모듈을 처음 쓰는 서비스를 만들 때 추가한다.
+include 'web-common'       // 공통 응답 형식, 공통 예외·에러 코드, 전역 예외 처리
+include 'security-common'  // JWT 검증 (발급자 user-service는 쓰지 않는다)
+include 'observability'    // 로그 형식, 분산 추적 설정
