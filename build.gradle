@@ -24,6 +24,8 @@ subprojects {
 
         tasks.withType(JavaCompile).configureEach {
             options.encoding = 'UTF-8'
+            // Spring이 @RequestParam 등의 이름을 리플렉션으로 읽으려면 필요하다 (Boot 플러그인을 쓰지 않아 직접 켠다).
+            options.compilerArgs << '-parameters'
         }
 
         tasks.named('test') {
