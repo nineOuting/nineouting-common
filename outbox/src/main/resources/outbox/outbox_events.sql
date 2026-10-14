@@ -12,7 +12,6 @@ CREATE TABLE outbox_events
     next_attempt_at DATETIME(6)  NOT NULL,
     last_error      VARCHAR(500) NULL,
     created_at      DATETIME(6)  NOT NULL,
-    sent_at         DATETIME(6)  NULL,
     PRIMARY KEY (id),
     CONSTRAINT uk_outbox_events_event_id UNIQUE (event_id),
     INDEX idx_outbox_events_status_next_attempt (status, next_attempt_at)

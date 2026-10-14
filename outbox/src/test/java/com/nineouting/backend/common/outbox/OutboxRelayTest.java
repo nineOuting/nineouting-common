@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
@@ -21,19 +23,18 @@ class OutboxRelayTest {
     private static final LocalDateTime NOW_LOCAL = LocalDateTime.ofInstant(NOW, ZoneOffset.UTC);
 
     private final OutboxEventRepository repository = mock(OutboxEventRepository.class);
-    private final OutboxProperties properties = new OutboxProperties("test-service", null, 3, Duration.ofSeconds(5), null);
+    private final OutboxProperties properties = new OutboxProperties("test-service", null, 3, Duration.ofSeconds(5));
     private final List<String> sent = new ArrayList<>();
 
     @Test
-    void 보낸_이벤트는_SENT가_된다() {
+    void 보낸_이벤트는_지운다() {
         OutboxEvent event = givenDue("topic-a");
         OutboxRelay relay = relay((destination, key, payload) -> sent.add(destination + ":" + key + ":" + payload));
 
         relay.relay();
 
         assertThat(sent).containsExactly("topic-a:key-1:{}");
-        assertThat(event.getStatus()).isEqualTo(OutboxStatus.SENT);
-        assertThat(event.getSentAt()).isEqualTo(NOW_LOCAL);
+        verify(repository).delete(event);
     }
 
     @Test
@@ -55,6 +56,7 @@ class OutboxRelayTest {
         relay.relay();
         assertThat(event.getStatus()).isEqualTo(OutboxStatus.FAILED);
         assertThat(event.getAttempts()).isEqualTo(3);
+        verify(repository, never()).delete(event);
     }
 
     @Test
@@ -71,7 +73,8 @@ class OutboxRelayTest {
         relay.relay();
 
         assertThat(failing.getStatus()).isEqualTo(OutboxStatus.PENDING);
-        assertThat(ok.getStatus()).isEqualTo(OutboxStatus.SENT);
+        verify(repository, never()).delete(failing);
+        verify(repository).delete(ok);
     }
 
     @Test

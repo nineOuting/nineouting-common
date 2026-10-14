@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
@@ -22,8 +21,4 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
     @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "-2"))
     @Query("select e from OutboxEvent e where e.status = :status and e.nextAttemptAt <= :now order by e.id")
     List<OutboxEvent> findDue(@Param("status") OutboxStatus status, @Param("now") LocalDateTime now, Pageable page);
-
-    @Modifying
-    @Query("delete from OutboxEvent e where e.status = :status and e.sentAt < :before")
-    int deleteSentBefore(@Param("status") OutboxStatus status, @Param("before") LocalDateTime before);
 }

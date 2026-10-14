@@ -14,7 +14,8 @@ nineouting 백엔드 서비스들이 함께 쓰는 공통 모듈.
 | `security-common` | JWT 검증 (공개키 JWKS 방식). 발급자 `user-service`는 쓰지 않는다 | 준비 중 (v0.1.0) |
 | `observability` | JSON 로그 형식, trace ID 로그 출력, 분산 추적 설정 | 준비 중 (v0.1.0) |
 | `event-contract` | 이벤트 봉투(`EventEnvelope`)와 이벤트별 내용. 런타임 의존성 없음 | v0.2.0 |
-| `outbox` | Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 Kafka로 전송 | v0.2.0 |
+| `outbox` | Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 Kafka로 전송 (보내면 삭제) | v0.2.0 |
+| `inbox` | Inbox: Kafka로 받은 이벤트를 DB에 먼저 저장(중복 제거)하고 처리기에 넘김 (실패 시 재시도) | v0.3.0 |
 | `client-common` | 서비스 간 REST 호출 + 재시도·차단 | 서비스 간 호출이 처음 생길 때 추가 |
 
 ## 서비스에서 쓰는 방법
@@ -155,7 +156,7 @@ Kafka가 잠시 멈춰도 이벤트가 사라지지 않고, 데이터는 저장�
 - 서비스를 여러 개 띄워도 `SELECT … FOR UPDATE SKIP LOCKED`로 같은 이벤트를 동시에 보내지 않는다.
 - 같은 이벤트가 두 번 갈 수 있다(at-least-once). **받는 쪽은 `eventId`로 중복을 거른다.**
 - 봉투에 W3C `traceparent`가 들어가 받는 쪽에서 추적을 이어 갈 수 있다.
-- 보낸 이벤트는 7일 뒤 지운다(매일 04:00). `FAILED`는 원인 확인을 위해 남긴다.
+- 보낸 이벤트는 바로 지운다. 끝내 보내지 못한 `FAILED`만 원인 확인을 위해 남는다.
 
 | 설정 | 기본값 |
 |---|---|
@@ -165,4 +166,48 @@ Kafka가 잠시 멈춰도 이벤트가 사라지지 않고, 데이터는 저장�
 | `nineouting.outbox.batch-size` | `100` |
 | `nineouting.outbox.max-attempts` | `10` |
 | `nineouting.outbox.max-retry-delay` | `5m` |
-| `nineouting.outbox.retention` | `7d` |
+
+## inbox 설정
+
+Kafka로 받은 이벤트를 **먼저 DB(inbox)에 저장**하고, 별도 작업이 서비스의 처리기(`InboxHandler`)에 넘긴다.
+처리하다 실패하거나 서비스가 잠시 멈춰도 이벤트를 잃지 않고, 같은 이벤트가 두 번 와도(`eventId`) 한 번만 처리한다.
+
+1. 의존성: `inbox` + `spring-boot-starter-data-jpa` + `spring-boot-starter-kafka`
+2. 테이블: [`inbox/inbox_events.sql`](inbox/src/main/resources/inbox/inbox_events.sql)을 서비스의 Flyway 마이그레이션으로 추가
+3. 받을 토픽 (쉼표로 구분):
+   ```yaml
+   nineouting:
+     inbox:
+       topics: workspace.member-join-requested,workspace.member-join-approved
+   ```
+4. 처리기:
+   ```java
+   @Component
+   @RequiredArgsConstructor
+   class MemberJoinRequestedHandler implements InboxHandler {
+       private final JsonMapper jsonMapper;
+
+       public boolean supports(String eventType) { return MemberJoinRequested.TYPE.equals(eventType); }
+
+       public void handle(InboxMessage message) {
+           MemberJoinRequested event = message.payload(jsonMapper, MemberJoinRequested.class);
+           // ... 처리 (예외를 던지면 이 처리기의 DB 변경은 되돌리고 나중에 다시 시도)
+       }
+   }
+   ```
+
+- 소비자 그룹은 서비스 이름(`spring.application.name`)이다.
+- inbox 저장(DB)에 실패하면 Kafka 메시지를 버리지 않고 5초마다 다시 시도한다.
+- 처리는 이벤트마다 별도 트랜잭션. 실패하면 1초, 2초, 4초 … 최대 5분 간격으로 다시 하고, 10번 실패하면 `FAILED`로 남긴다.
+- 처리기가 없는 eventType은 경고만 남기고 처리한 것으로 둔다.
+- 처리한 이벤트는 7일 동안 남겨 중복을 거른 뒤 지운다 (매일 04:30).
+
+| 설정 | 기본값 |
+|---|---|
+| `nineouting.inbox.topics` | (필수) |
+| `nineouting.inbox.group-id` | `spring.application.name` |
+| `nineouting.inbox.process-interval` | `1s` |
+| `nineouting.inbox.batch-size` | `100` |
+| `nineouting.inbox.max-attempts` | `10` |
+| `nineouting.inbox.max-retry-delay` | `5m` |
+| `nineouting.inbox.retention` | `7d` |

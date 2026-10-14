@@ -7,3 +7,4 @@ include 'security-common'  // JWT 검증 (발급자 user-service는 쓰지 않�
 include 'observability'    // 로그 형식, 분산 추적 설정
 include 'event-contract'   // 이벤트 봉투와 이벤트별 내용 (프레임워크 의존 없음)
 include 'outbox'           // Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 따로 전송
+include 'inbox'            // Inbox: Kafka로 받은 이벤트를 DB에 먼저 저장하고 따로 처리 (중복 제거·재시도)
