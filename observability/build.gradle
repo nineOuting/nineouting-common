@@ -3,7 +3,7 @@ plugins {
     id 'io.spring.dependency-management'
 }
 
-// 실제 라이브러리 버전은 이 모듈을 쓰는 서비스가 정한다. 여기서는 BOM으로 맞추기만 한다.
+// 버전은 Spring Boot BOM으로 맞춘다.
 dependencyManagement {
     imports {
         mavenBom 'org.springframework.boot:spring-boot-dependencies:4.1.0'
@@ -11,10 +11,18 @@ dependencyManagement {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    // 모든 서비스가 같은 관측 구성을 갖도록 이 모듈 하나로 묶어서 전달한다 (api).
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    api 'io.micrometer:micrometer-registry-prometheus'
+    // 메트릭은 Prometheus가 가져가므로(pull) OTLP 메트릭 전송이 들어 있는 spring-boot-starter-opentelemetry 대신
+    // 추적(tracing)만 OpenTelemetry로 내보내는 모듈을 쓴다.
+    api 'org.springframework.boot:spring-boot-micrometer-tracing-opentelemetry'
+    api 'io.micrometer:micrometer-tracing-bridge-otel'
+    api 'io.opentelemetry:opentelemetry-exporter-otlp'
 
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
+    testImplementation 'org.yaml:snakeyaml'
+    testImplementation 'org.springframework.boot:spring-boot-starter-json'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
