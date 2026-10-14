@@ -10,8 +10,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 기록된 이벤트를 주기적으로 꺼내 보낸다.
- * 보낸 직후 상태를 저장하기 전에 서비스가 죽으면 같은 이벤트를 한 번 더 보낼 수 있다(at-least-once).
+ * 기록된 이벤트를 주기적으로 꺼내 보내고, 보낸 이벤트는 지운다.
+ * 보낸 직후 지우기 전에 서비스가 죽으면 같은 이벤트를 한 번 더 보낼 수 있다(at-least-once).
  * 받는 쪽은 eventId로 중복을 걸러야 한다.
  */
 @Slf4j
@@ -39,7 +39,7 @@ public class OutboxRelay {
         for (OutboxEvent event : due) {
             try {
                 sender.send(event.getDestination(), event.getMessageKey(), event.getPayload());
-                event.markSent(now);
+                repository.delete(event);
             } catch (Exception e) {
                 if (e instanceof InterruptedException) {
                     Thread.currentThread().interrupt();
