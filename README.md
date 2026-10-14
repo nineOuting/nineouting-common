@@ -65,3 +65,30 @@ JDK 21이 필요하다.
 ./gradlew build                # 컴파일 + 테스트
 ./gradlew publishToMavenLocal  # ~/.m2에 게시 (서비스에서 로컬로 확인할 때)
 ```
+
+## observability 설정
+
+모든 서비스가 같은 방식으로 메트릭·로그·추적을 남기도록 의존성과 기본 설정을 묶은 모듈이다.
+Java 코드는 없고, 이 모듈을 추가하면 아래가 함께 들어온다.
+
+- Actuator + Prometheus 메트릭 (`/actuator/prometheus`)
+- 쿠버네티스 헬스 체크 (`/actuator/health/liveness`, `/actuator/health/readiness`)
+- OpenTelemetry 분산 추적 (OTLP로 전송, 서비스 간 요청에 trace 정보 전파)
+- 로그에 traceId·spanId 출력, `local` 외 프로필에서는 JSON(logstash) 로그
+
+`application.yml`에서 기본 설정을 불러온다 (같은 키를 쓰면 서비스 값이 우선):
+```yaml
+spring:
+  application:
+    name: user-service
+  config:
+    import: classpath:observability/defaults.yml
+```
+
+| 환경 변수 | 기본값 | 설명 |
+|---|---|---|
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` | `http://localhost:4318/v1/traces` | 추적 데이터를 받을 수집기 주소 |
+| `SPRING_PROFILES_ACTIVE` | — | `local`이면 사람이 읽는 로그 + 추적 전송 끔 |
+
+- 엔드포인트 경로·수집 방식은 모니터링 담당과 맞춘 값이다. 바꿀 때는 담당자와 먼저 협의한다.
+- `defaults.yml`의 설정 이름은 테스트(`DefaultsPropertyNamesTest`)가 실제 Spring Boot 설정과 대조한다.
