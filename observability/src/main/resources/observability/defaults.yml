@@ -1,0 +1,47 @@
+# nineouting 서비스 공통 관측 설정.
+# 서비스의 application.yml에서 불러오고, 필요하면 같은 키로 덮어쓴다:
+#   spring:
+#     config:
+#       import: classpath:observability/defaults.yml
+#
+# 엔드포인트 경로·수집 방식은 모니터링 담당과 맞춘 값이다. 바꿀 때는 담당자와 먼저 협의한다.
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus   # /actuator/prometheus 를 Prometheus가 수집
+  endpoint:
+    health:
+      probes:
+        enabled: true                     # /actuator/health/liveness, /readiness (쿠버네티스)
+  tracing:
+    sampling:
+      probability: 1.0                    # 모든 요청을 추적 (트래픽이 커지면 낮춘다)
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+
+---
+# 로컬 개발(local 프로필): 사람이 읽기 쉬운 로그, 추적 데이터 전송 끔
+spring:
+  config:
+    activate:
+      on-profile: local
+management:
+  tracing:
+    export:
+      enabled: false
+
+---
+# 그 밖의 환경: JSON 로그 (traceId·spanId 포함) — 로그 수집기가 그대로 파싱한다
+spring:
+  config:
+    activate:
+      on-profile: "!local"
+logging:
+  structured:
+    format:
+      console: logstash
