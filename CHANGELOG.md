@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.0](https://github.com/nineOuting/nineouting-common/compare/v0.3.0...v0.4.0) (2026-10-14)
+
+
+### Features
+
+* client-common 모듈 추가 (사용자·폴더 권한 조회) ([6462672](https://github.com/nineOuting/nineouting-common/commit/6462672399dddfa89b281c77a85e91aa21f160f2))
+* client-common 모듈 추가 (사용자·폴더 권한 조회) ([8f39e4e](https://github.com/nineOuting/nineouting-common/commit/8f39e4e9756504b5d26f1765aa1b402f96287817))
+* 회의 마무리·회의록 검토 요청·확정 이벤트 추가 ([2703612](https://github.com/nineOuting/nineouting-common/commit/2703612a523a22e18289ddee6c0eda38456639c0))
+* 회의 마무리·회의록 검토 요청·확정 이벤트 추가 ([209dfe6](https://github.com/nineOuting/nineouting-common/commit/209dfe6cd802153528ecbf36829a7b554b1e024d))
+
 ## [0.3.0](https://github.com/nineOuting/nineouting-common/compare/v0.2.0...v0.3.0) (2026-10-14)
 
 
