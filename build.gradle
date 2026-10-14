@@ -36,6 +36,16 @@ subprojects {
             publications {
                 maven(MavenPublication) {
                     from components.java
+                    // 버전을 BOM에 맡긴 의존성도 실제 해석된 버전을 게시 파일(pom, module)에 적는다.
+                    // 없으면 버전 없는 의존성만 가진 observability가 게시되지 않는다.
+                    versionMapping {
+                        usage('java-api') {
+                            fromResolutionOf('runtimeClasspath')
+                        }
+                        usage('java-runtime') {
+                            fromResolutionResult()
+                        }
+                    }
                 }
             }
         }

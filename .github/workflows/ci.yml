@@ -23,5 +23,6 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      # 게시 파일 검증까지 확인한다 (릴리스 때 처음 실패하는 일을 막는다)
       - name: Build
-        run: ./gradlew build --no-daemon --console=plain
+        run: ./gradlew build publishToMavenLocal --no-daemon --console=plain
