@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/nineOuting/nineouting-common/compare/v0.1.0...v0.2.0) (2026-10-14)
+
+
+### Features
+
+* event-contract·outbox 모듈 추가 (v0.2.0) — dev 재반영 ([a993500](https://github.com/nineOuting/nineouting-common/commit/a993500418e682ee143534dd166ae61e25453843))
+
+
+### Bug Fixes
+
+* 게시 파일 버전 기록([#10](https://github.com/nineOuting/nineouting-common/issues/10)) stage 반영 ([7d0e7d7](https://github.com/nineOuting/nineouting-common/commit/7d0e7d722d2fca2a817eb4b276a0e1193e27639d))
+
 ## 0.1.0 (2026-10-14)
 
 
