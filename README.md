@@ -46,6 +46,46 @@ dependencies {
 - CI: 조직 시크릿 `GPR_TOKEN`(read:packages 토큰)을 Gradle 단계 환경 변수로 넣는다.
 - 항상 정확한 버전으로 의존한다. `SNAPSHOT`은 쓰지 않는다.
 
+### security-common
+
+user-service가 RS256으로 발급한 access 토큰을 공개키(JWKS)로 검증한다. 토큰에는 사용자 ID(`sub`)만 들어 있고,
+워크스페이스·회의 역할은 각 서비스가 조회한다.
+
+`application.yml`:
+```yaml
+nineouting:
+  security:
+    jwt:
+      jwks-uri: ${JWT_JWKS_URI}   # 예: http://user-service:8080/.well-known/jwks.json
+      # issuer: nineouting-user-service (기본값)
+```
+
+어떤 주소를 막을지는 서비스마다 다르므로 `SecurityFilterChain`은 서비스가 만든다:
+```java
+@Bean
+SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter,
+        JsonAuthenticationEntryPoint entryPoint, JsonAccessDeniedHandler accessDeniedHandler) throws Exception {
+    return http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/actuator/health/**").permitAll()
+                    .anyRequest().authenticated())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .exceptionHandling(e -> e.authenticationEntryPoint(entryPoint).accessDeniedHandler(accessDeniedHandler))
+            .build();
+}
+```
+
+Controller에서 로그인 사용자 꺼내기:
+```java
+@GetMapping("/api/meetings")
+public ApiResponse<List<MeetingResponse>> list(@CurrentUser AuthenticatedUser user) { ... }
+```
+
+- 401: 토큰 없음·잘못됨 → `UNAUTHORIZED`, 만료 → `TOKEN_EXPIRED` (프론트는 refresh 토큰으로 재발급)
+- 403: `FORBIDDEN`. 서비스 권한(회의록 작성자만 수정 등)은 서비스가 `BusinessException(CommonErrorCode.FORBIDDEN)`으로 처리한다.
+
 ## 릴리스
 
 [release-please](https://github.com/googleapis/release-please)가 자동으로 처리한다. 사람이 하는 일은 **Release PR 머지 한 번**이다.
