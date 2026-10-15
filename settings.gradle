@@ -8,3 +8,4 @@ include 'event-contract'   // 이벤트 봉투와 이벤트별 내용 (프레임
 include 'outbox'           // Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 따로 전송
 include 'inbox'            // Inbox: Kafka로 받은 이벤트를 DB에 먼저 저장하고 따로 처리 (중복 제거·재시도)
 include 'client-common'    // 서비스 간 조회: user-service 사용자 정보, workspace-service 폴더 권한
+include 'api-docs'         // API 문서: Swagger UI, OpenAPI (JWT 입력, 내부 주소 숨김)

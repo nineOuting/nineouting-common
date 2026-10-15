@@ -17,6 +17,7 @@ nineouting 백엔드 서비스들이 함께 쓰는 공통 모듈.
 | `outbox` | Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 Kafka로 전송 (보내면 삭제) | v0.2.0 |
 | `inbox` | Inbox: Kafka로 받은 이벤트를 DB에 먼저 저장(중복 제거)하고 처리기에 넘김 (실패 시 재시도) | v0.3.0 |
 | `client-common` | 서비스 간 조회: user-service 사용자 정보(`UserClient`), workspace-service 폴더 권한(`WorkspaceClient`) | v0.4.0 |
+| `api-docs` | API 문서: Swagger UI(`/swagger-ui.html`)·OpenAPI(`/v3/api-docs`), JWT 입력, 내부 주소 숨김 | v0.5.0 |
 
 ## 서비스에서 쓰는 방법
 
@@ -230,3 +231,22 @@ nineouting:
 
 - 서비스에 `spring-boot-starter-restclient`가 있어야 한다 (추적 헤더가 자동으로 붙는다).
 - 테스트에서는 `@MockitoBean UserClient`처럼 가짜로 바꿔 쓴다.
+
+## api-docs 설정
+
+의존성만 추가하면 `/v3/api-docs`(OpenAPI)와 `/swagger-ui.html`이 생긴다.
+
+```groovy
+implementation "com.nineouting.backend:api-docs:${commonVersion}"
+```
+
+서비스의 SecurityConfig에서 문서 주소를 로그인 없이 연다:
+
+```java
+.requestMatchers(ApiDocsPaths.PUBLIC).permitAll()
+```
+
+- 제목은 `spring.application.name` + " API", Authorize 버튼으로 JWT를 넣는다
+- `/internal/**`, `/.well-known/**`는 문서에서 뺀다. `@CurrentUser` 파라미터는 숨긴다
+- 서버 주소가 "/"라서 Gateway에서 모아 볼 때도 Gateway로 요청한다
+- 운영에서 닫기: `SPRINGDOC_API_DOCS_ENABLED=false`, `SPRINGDOC_SWAGGER_UI_ENABLED=false`
