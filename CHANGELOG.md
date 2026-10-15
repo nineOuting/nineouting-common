@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/nineOuting/nineouting-common/compare/v0.4.0...v0.5.0) (2026-10-15)
+
+
+### Features
+
+* api-docs 모듈 추가 (Swagger UI, OpenAPI) ([c97dde8](https://github.com/nineOuting/nineouting-common/commit/c97dde8eab7f82a0cfb47c9aeda336874ae60f0c))
+* api-docs 모듈 추가 (Swagger UI, OpenAPI) ([c6a8708](https://github.com/nineOuting/nineouting-common/commit/c6a8708ab818d76fcf02d502b3266f5a2beb5acd))
+
 ## [0.4.0](https://github.com/nineOuting/nineouting-common/compare/v0.3.0...v0.4.0) (2026-10-14)
 
 
