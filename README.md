@@ -148,7 +148,7 @@ Kafka가 잠시 멈춰도 이벤트가 사라지지 않고, 데이터는 저장�
    public void request(String email) {
        // ... 데이터 변경
        outboxEventWriter.append(PasswordResetRequested.TOPIC, email, PasswordResetRequested.TYPE,
-               new PasswordResetRequested(email, link));
+               new PasswordResetRequested(email, code));
    }
    ```
 
