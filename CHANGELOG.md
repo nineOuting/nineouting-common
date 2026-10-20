@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.0](https://github.com/nineOuting/nineouting-common/compare/v0.5.0...v0.6.0) (2026-10-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* PasswordResetRequested의 resetLink 필드가 code로 바뀐다. user-service와 notification-service를 함께 올려야 한다.
+
+### Features
+
+* 비밀번호 찾기 이벤트를 재설정 링크에서 인증 번호로 변경 ([8207e4f](https://github.com/nineOuting/nineouting-common/commit/8207e4f513ec070045239a8acfaf7d62df5ca0b3))
+
 ## [0.5.0](https://github.com/nineOuting/nineouting-common/compare/v0.4.0...v0.5.0) (2026-10-15)
 
 
