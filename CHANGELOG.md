@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0](https://github.com/nineOuting/nineouting-common/compare/v0.6.0...v0.7.0) (2026-10-26)
+
+
+### Features
+
+* 이메일 초대 이벤트 추가 (REQ-127) ([2280c4f](https://github.com/nineOuting/nineouting-common/commit/2280c4fe57451220fab653cd95dffffc797ee924))
+* 회의 마무리 이벤트에 장소, 확정 후 수정 이벤트 추가 (REQ-055, 111) ([41bb09b](https://github.com/nineOuting/nineouting-common/commit/41bb09bf1154850e3e73c19077d0febafabc7139))
+* 회의 장소·확정 후 수정·이메일 초대 이벤트 (REQ-055, 111, 127) ([f38bab1](https://github.com/nineOuting/nineouting-common/commit/f38bab1c02551c30fc01a8584299a5509da0e995))
+
 ## [0.6.0](https://github.com/nineOuting/nineouting-common/compare/v0.5.0...v0.6.0) (2026-10-20)
 
 
