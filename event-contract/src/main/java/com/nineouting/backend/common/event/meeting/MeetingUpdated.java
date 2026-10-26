@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * meeting-service → notification-service: 회의 정보가 바뀌었다 (REQ-116).
+ * meeting-service → notification-service: 회의 정보가 바뀌었다 (REQ-064).
  * 새로 추가된 사람은 초대 알림, 나머지 참석자는 변경 알림을 받는다. 빠진 사람에게는 알리지 않는다.
  *
  * @param attendeeUserIds 수정 후 참석자 전원 (만든 사람 포함)
