@@ -6,8 +6,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 /**
  * <pre>
  * nineouting:
- *   messaging:
- *     broker: sns              # kafka(기본) 또는 sns
  *   outbox:
  *     source: user-service     # 이벤트를 보낸 서비스 이름 (기본값: spring.application.name)
  *     topic-prefix: arn:aws:sns:ap-northeast-2:123456789012:nineouting-dev-   # sns일 때

@@ -1,7 +1,7 @@
 package com.nineouting.backend.common.event.workspace;
 
 /**
- * workspace-service → notification-service: 요청자에게 참여 승인 알림 (REQ-035).
+ * workspace-service → notification-service: 요청자에게 참여 승인 알림 (REQ-035 레거시).
  */
 public record MemberJoinApproved(Long workspaceId, String workspaceName, Long userId) {
 

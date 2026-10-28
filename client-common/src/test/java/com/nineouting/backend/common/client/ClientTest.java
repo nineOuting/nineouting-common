@@ -38,7 +38,7 @@ class ClientTest {
     void 사용자_정보를_조회하고_100명씩_나눠_요청한다() throws IOException {
         startServer();
         server.createContext("/internal/users", exchange -> {
-            List<String> ids = Arrays.asList(exchange.getRequestURI().getQuery().replace("ids=", "").split(","));
+            List<String> ids = Arrays.asList(exchange.getRequestURI().getQuery().replace("ids=", "").split("&")[0].split(","));
             requestedBatchSizes.add(ids.size());
             String data = ids.stream()
                     .map(id -> "{\"userId\":%s,\"name\":\"user%s\",\"email\":\"user%s@example.com\",\"profileImageUrl\":null}"
@@ -53,6 +53,24 @@ class ClientTest {
         assertThat(users).hasSize(150);
         assertThat(users.get(7L)).isEqualTo(new UserSummary(7L, "user7", "user7@example.com", null));
         assertThat(requestedBatchSizes).containsExactly(100, 50);
+    }
+
+    @Test
+    void 워크스페이스를_주면_워크스페이스_프로필을_달라고_한다() throws IOException {
+        startServer();
+        List<String> queries = new ArrayList<>();
+        server.createContext("/internal/users", exchange -> {
+            queries.add(exchange.getRequestURI().getQuery());
+            respond(exchange, 200, "{\"success\":true,\"data\":[{\"userId\":7,\"name\":\"김PM\",\"email\":\"user7@example.com\","
+                    + "\"profileImageUrl\":null,\"affiliation\":\"기획팀\"}],\"message\":\"\"}");
+        });
+        UserClient client = new UserClient(restClient(baseUrl()));
+
+        assertThat(client.findUsers(List.of(7L), 3L).get(7L))
+                .isEqualTo(new UserSummary(7L, "김PM", "user7@example.com", null, "기획팀"));
+        client.findUsers(List.of(7L));
+
+        assertThat(queries).containsExactly("ids=7&workspaceId=3", "ids=7");
     }
 
     @Test

@@ -40,7 +40,7 @@ public class OutboxEventWriter {
     }
 
     /**
-     * @param topic      이벤트 클래스의 TOPIC 상수 (브로커가 Kafka 토픽·SNS 토픽 이름으로 쓴다)
+     * @param topic      이벤트 클래스의 TOPIC 상수 (SNS 토픽 이름이 된다)
      * @param messageKey 순서를 지켜야 하는 단위 (예: 사용자 ID). 상관없으면 null
      * @param eventType  이벤트 클래스의 TYPE 상수
      */

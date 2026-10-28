@@ -6,6 +6,6 @@ include 'security-common'  // JWT 검증 (발급자 user-service는 쓰지 않�
 include 'observability'    // 로그 형식, 분산 추적 설정
 include 'event-contract'   // 이벤트 봉투와 이벤트별 내용 (프레임워크 의존 없음)
 include 'outbox'           // Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 따로 전송
-include 'inbox'            // Inbox: SQS(또는 Kafka)로 받은 이벤트를 DB에 먼저 저장하고 따로 처리 (중복 제거·재시도)
+include 'inbox'            // Inbox: SQS로 받은 이벤트를 DB에 먼저 저장하고 따로 처리 (중복 제거·재시도)
 include 'client-common'    // 서비스 간 조회: user-service 사용자 정보, workspace-service 폴더 권한
 include 'api-docs'         // API 문서: Swagger UI, OpenAPI (JWT 입력, 내부 주소 숨김)
