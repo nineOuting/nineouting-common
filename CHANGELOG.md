@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/nineOuting/nineouting-common/compare/v0.7.0...v0.8.0) (2026-10-28)
+
+
+### Features
+
+* SNS로 보내고 SQS로 받는 부품 추가 (Kafka 대신) ([0fb7bf9](https://github.com/nineOuting/nineouting-common/commit/0fb7bf95384932622b125769bd77b61fd1cd0753))
+* SNS로 보내고 SQS로 받는 부품 추가 (Kafka 대신) ([1190daf](https://github.com/nineOuting/nineouting-common/commit/1190daf5642f0025fc62d5a1e0ea10627522e5e7))
+
 ## [0.7.0](https://github.com/nineOuting/nineouting-common/compare/v0.6.0...v0.7.0) (2026-10-26)
 
 
