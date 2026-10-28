@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.0](https://github.com/nineOuting/nineouting-common/compare/v0.8.0...v0.9.0) (2026-10-28)
+
+
+### Features
+
+* 워크스페이스별 프로필 조회, 삭제된 요구사항 레거시 표시 ([#45](https://github.com/nineOuting/nineouting-common/issues/45)) ([bb1ba58](https://github.com/nineOuting/nineouting-common/commit/bb1ba586a45cd6d7d20b5391caeb0d778ed5d273))
+
 ## [0.8.0](https://github.com/nineOuting/nineouting-common/compare/v0.7.0...v0.8.0) (2026-10-28)
 
 
