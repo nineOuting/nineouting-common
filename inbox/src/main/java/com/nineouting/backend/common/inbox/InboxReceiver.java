@@ -10,8 +10,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Kafka 메시지를 inbox에 저장한다. 같은 eventId는 한 번만 저장한다.
- * 저장이 끝나야 Kafka 오프셋이 넘어가므로, 저장에 실패하면(DB 장애 등) Kafka가 같은 메시지를 다시 준다.
+ * 받은 메시지(Kafka·SQS)를 inbox에 저장한다. 같은 eventId는 한 번만 저장한다.
+ * 저장이 끝나야 Kafka 오프셋이 넘어가고 SQS 메시지가 지워지므로, 저장에 실패하면(DB 장애 등) 같은 메시지가 다시 온다.
  */
 @Slf4j
 public class InboxReceiver {

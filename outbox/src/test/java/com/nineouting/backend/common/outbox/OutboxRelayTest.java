@@ -23,7 +23,7 @@ class OutboxRelayTest {
     private static final LocalDateTime NOW_LOCAL = LocalDateTime.ofInstant(NOW, ZoneOffset.UTC);
 
     private final OutboxEventRepository repository = mock(OutboxEventRepository.class);
-    private final OutboxProperties properties = new OutboxProperties("test-service", null, 3, Duration.ofSeconds(5));
+    private final OutboxProperties properties = new OutboxProperties("test-service", null, 3, Duration.ofSeconds(5), null, null);
     private final List<String> sent = new ArrayList<>();
 
     @Test

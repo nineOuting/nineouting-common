@@ -6,13 +6,15 @@ plugins {
 dependencyManagement {
     imports {
         mavenBom 'org.springframework.boot:spring-boot-dependencies:4.1.0'
+        mavenBom 'software.amazon.awssdk:bom:2.55.0'
     }
 }
 
 dependencies {
-    // 이 모듈을 쓰는 서비스는 data-jpa·kafka 스타터를 갖고 있어야 한다 (README 참고).
+    // 이 모듈을 쓰는 서비스는 data-jpa 스타터와, 브로커에 따라 kafka 스타터 또는 AWS SDK sqs를 갖고 있어야 한다 (README 참고).
     compileOnly 'org.springframework.boot:spring-boot-starter-data-jpa'
     compileOnly 'org.springframework.boot:spring-boot-starter-kafka'
+    compileOnly 'software.amazon.awssdk:sqs'
     compileOnly 'org.springframework.boot:spring-boot-starter-json'
 
     compileOnly 'org.projectlombok:lombok'
@@ -20,6 +22,7 @@ dependencies {
 
     testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     testImplementation 'org.springframework.boot:spring-boot-starter-kafka'
+    testImplementation 'software.amazon.awssdk:sqs'
     testImplementation 'org.springframework.boot:spring-boot-starter-json'
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core'
