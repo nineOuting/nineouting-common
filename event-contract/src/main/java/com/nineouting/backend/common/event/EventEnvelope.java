@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * 모든 이벤트가 공통으로 갖는 봉투. Kafka 메시지 본문은 이 형식의 JSON이다.
+ * 모든 이벤트가 공통으로 갖는 봉투. SNS·SQS 메시지 본문은 이 형식의 JSON이다.
  *
  * <pre>{@code
  * { "eventId": "...", "eventType": "EmailVerificationRequested", "occurredAt": "2026-10-14T05:00:00Z",
