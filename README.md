@@ -14,8 +14,8 @@ nineouting 백엔드 서비스들이 함께 쓰는 공통 모듈.
 | `security-common` | JWT 검증 (공개키 JWKS 방식). 발급자 `user-service`는 쓰지 않는다 | 준비 중 (v0.1.0) |
 | `observability` | JSON 로그 형식, trace ID 로그 출력, 분산 추적 설정 | 준비 중 (v0.1.0) |
 | `event-contract` | 이벤트 봉투(`EventEnvelope`)와 이벤트별 내용. 런타임 의존성 없음 | v0.2.0 |
-| `outbox` | Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 Kafka로 전송 (보내면 삭제) | v0.2.0 |
-| `inbox` | Inbox: Kafka로 받은 이벤트를 DB에 먼저 저장(중복 제거)하고 처리기에 넘김 (실패 시 재시도) | v0.3.0 |
+| `outbox` | Transactional Outbox: DB 트랜잭션과 함께 이벤트를 기록하고 SNS(또는 Kafka)로 전송 (보내면 삭제) | v0.2.0, SNS v0.8.0 |
+| `inbox` | Inbox: SQS(또는 Kafka)로 받은 이벤트를 DB에 먼저 저장(중복 제거)하고 처리기에 넘김 (실패 시 재시도) | v0.3.0, SQS v0.8.0 |
 | `client-common` | 서비스 간 조회: user-service 사용자 정보(`UserClient`), workspace-service 폴더 권한(`WorkspaceClient`) | v0.4.0 |
 | `api-docs` | API 문서: Swagger UI(`/swagger-ui.html`)·OpenAPI(`/v3/api-docs`), JWT 입력, 내부 주소 숨김 | v0.5.0 |
 
@@ -137,12 +137,22 @@ spring:
 
 ## outbox 설정
 
-데이터 변경과 이벤트 기록을 **같은 DB 트랜잭션**에 저장하고, 별도 작업(릴레이)이 Kafka로 보낸다.
-Kafka가 잠시 멈춰도 이벤트가 사라지지 않고, 데이터는 저장됐는데 이벤트만 빠지는 일이 없다.
+데이터 변경과 이벤트 기록을 **같은 DB 트랜잭션**에 저장하고, 별도 작업(릴레이)이 SNS로 보낸다.
+SNS가 잠시 멈춰도 이벤트가 사라지지 않고, 데이터는 저장됐는데 이벤트만 빠지는 일이 없다.
 
-1. 의존성: `outbox` + `spring-boot-starter-data-jpa` + `spring-boot-starter-kafka`
-2. 테이블: [`outbox/outbox_events.sql`](outbox/src/main/resources/outbox/outbox_events.sql)을 서비스의 Flyway 마이그레이션으로 추가
-3. 사용 (반드시 `@Transactional` 안에서):
+1. 의존성: `outbox` + `spring-boot-starter-data-jpa` + `software.amazon.awssdk:sns` (Kafka면 `spring-boot-starter-kafka`)
+2. 설정:
+   ```yaml
+   nineouting:
+     messaging:
+       broker: sns          # 기본은 kafka (전환 기간용). 다음 버전에서 Kafka 부품을 지운다
+     outbox:
+       topic-prefix: arn:aws:sns:ap-northeast-2:123456789012:nineouting-dev-
+   ```
+   토픽 ARN = 접두사 + TOPIC 상수의 `.`을 `-`로 바꾼 것 + `.fifo` (예: `meeting.created` → `...nineouting-dev-meeting-created.fifo`).
+   FIFO 토픽이면 메시지 키가 `MessageGroupId`(같은 키는 순서대로), 봉투의 SHA-256이 `MessageDeduplicationId`가 되고, 메시지 속성 `topic`에 원래 TOPIC 이름을 담는다.
+3. 테이블: [`outbox/outbox_events.sql`](outbox/src/main/resources/outbox/outbox_events.sql)을 서비스의 Flyway 마이그레이션으로 추가
+4. 사용 (반드시 `@Transactional` 안에서):
    ```java
    @Transactional
    public void request(String email) {
@@ -167,20 +177,36 @@ Kafka가 잠시 멈춰도 이벤트가 사라지지 않고, 데이터는 저장�
 | `nineouting.outbox.batch-size` | `100` |
 | `nineouting.outbox.max-attempts` | `10` |
 | `nineouting.outbox.max-retry-delay` | `5m` |
+| `nineouting.outbox.topic-prefix` | (sns면 필수) |
+| `nineouting.outbox.fifo` | `true` (표준 토픽이면 `false`) |
+
+## SNS·SQS 접속 (outbox·inbox 공통)
+
+| 설정 | 기본값 | 설명 |
+|---|---|---|
+| `nineouting.messaging.region` | AWS SDK 기본 (`AWS_REGION`) | |
+| `nineouting.messaging.endpoint` | 없음 (AWS) | LocalStack이면 `http://localhost:4566` |
+| `nineouting.messaging.access-key` / `secret-key` | 없음 (AWS SDK 기본: EKS는 IRSA) | LocalStack이면 `test` |
+
+서비스가 `SnsClient`·`SqsClient` 빈을 직접 만들면 그것을 쓴다 (테스트에서 LocalStack에 붙일 때).
 
 ## inbox 설정
 
-Kafka로 받은 이벤트를 **먼저 DB(inbox)에 저장**하고, 별도 작업이 서비스의 처리기(`InboxHandler`)에 넘긴다.
+SQS 큐로 받은 이벤트를 **먼저 DB(inbox)에 저장**하고, 별도 작업이 서비스의 처리기(`InboxHandler`)에 넘긴다.
 처리하다 실패하거나 서비스가 잠시 멈춰도 이벤트를 잃지 않고, 같은 이벤트가 두 번 와도(`eventId`) 한 번만 처리한다.
 
-1. 의존성: `inbox` + `spring-boot-starter-data-jpa` + `spring-boot-starter-kafka`
+1. 의존성: `inbox` + `spring-boot-starter-data-jpa` + `software.amazon.awssdk:sqs` (Kafka면 `spring-boot-starter-kafka`)
 2. 테이블: [`inbox/inbox_events.sql`](inbox/src/main/resources/inbox/inbox_events.sql)을 서비스의 Flyway 마이그레이션으로 추가
-3. 받을 토픽 (쉼표로 구분):
+3. 받을 곳:
    ```yaml
    nineouting:
      inbox:
-       topics: workspace.member-join-requested,workspace.member-join-approved
+       # SQS: 이 서비스 큐. 어떤 토픽을 받을지는 SNS 구독(Terraform·LocalStack 스크립트)이 정한다
+       queue: https://sqs.ap-northeast-2.amazonaws.com/123456789012/nineouting-dev-notification-service.fifo
+       # Kafka(전환 기간): 받을 토픽 (쉼표로 구분)
+       # topics: workspace.member-join-requested,workspace.member-join-approved
    ```
+   SNS 구독은 **Raw 전달**(`RawMessageDelivery=true`)이어야 한다. 봉투 JSON이 그대로 본문이 되고 메시지 속성 `topic`이 넘어온다.
 4. 처리기:
    ```java
    @Component
@@ -197,16 +223,19 @@ Kafka로 받은 이벤트를 **먼저 DB(inbox)에 저장**하고, 별도 작업
    }
    ```
 
-- 소비자 그룹은 서비스 이름(`spring.application.name`)이다.
-- inbox 저장(DB)에 실패하면 Kafka 메시지를 버리지 않고 5초마다 다시 시도한다.
+- SQS: 20초 롱 폴링으로 한 번에 10개까지 받는다. inbox 저장이 끝난 메시지만 큐에서 지운다. 저장에 실패하면(DB 장애 등) 지우지 않아, 큐의 보이지 않는 시간(visibility timeout)이 지나면 다시 온다. 여러 번 실패하면 큐 설정대로 DLQ로 간다
+- SQS FIFO에서 한 메시지가 실패하면 같은 그룹(`MessageGroupId`)의 뒤 메시지는 그 회차에 처리하지 않는다 (순서를 지키려고)
+- 같은 서비스를 여러 개 띄우면 한 큐를 나눠 받는다
+- Kafka: 소비자 그룹은 서비스 이름(`spring.application.name`)이다. inbox 저장(DB)에 실패하면 메시지를 버리지 않고 5초마다 다시 시도한다
 - 처리는 이벤트마다 별도 트랜잭션. 실패하면 1초, 2초, 4초 … 최대 5분 간격으로 다시 하고, 10번 실패하면 `FAILED`로 남긴다.
 - 처리기가 없는 eventType은 경고만 남기고 처리한 것으로 둔다.
 - 처리한 이벤트는 7일 동안 남겨 중복을 거른 뒤 지운다 (매일 04:30).
 
 | 설정 | 기본값 |
 |---|---|
-| `nineouting.inbox.topics` | (필수) |
-| `nineouting.inbox.group-id` | `spring.application.name` |
+| `nineouting.inbox.queue` | SQS 큐 주소 (`queue`나 `topics` 중 하나 필수) |
+| `nineouting.inbox.topics` | Kafka 토픽 |
+| `nineouting.inbox.group-id` | `spring.application.name` (Kafka) |
 | `nineouting.inbox.process-interval` | `1s` |
 | `nineouting.inbox.batch-size` | `100` |
 | `nineouting.inbox.max-attempts` | `10` |
