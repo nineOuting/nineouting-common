@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * 보낼 이벤트. 서비스의 데이터 변경과 같은 DB 트랜잭션에서 저장되므로, 변경이 저장되면 이벤트도 반드시 남는다.
- * 브로커(Kafka·SNS)로 보내면 행을 지운다. 끝내 보내지 못한 이벤트(FAILED)만 원인 확인을 위해 남는다.
+ * SNS로 보내면 행을 지운다. 끝내 보내지 못한 이벤트(FAILED)만 원인 확인을 위해 남는다.
  * 테이블(outbox_events)은 각 서비스가 Flyway로 만든다 (README의 DDL).
  */
 @Getter
@@ -37,11 +37,11 @@ public class OutboxEvent {
     @Column(name = "event_type", nullable = false, length = 100)
     private String eventType;
 
-    /** 이벤트 클래스의 TOPIC 상수 (Kafka 토픽, SNS는 이 이름으로 토픽 ARN을 만든다) */
+    /** 이벤트 클래스의 TOPIC 상수 (이 이름으로 SNS 토픽 ARN을 만든다) */
     @Column(nullable = false, length = 200)
     private String destination;
 
-    /** 같은 키는 순서가 지켜진다 (Kafka 파티션 키, SNS FIFO MessageGroupId) */
+    /** 같은 키는 순서가 지켜진다 (SNS FIFO MessageGroupId) */
     @Column(name = "message_key", length = 100)
     private String messageKey;
 

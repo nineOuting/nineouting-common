@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 처리한 지 오래된 이벤트를 지운다. 이 기간이 지나면 같은 이벤트가 다시 와도 걸러낼 수 없으므로
- * Kafka의 재전송이 일어날 수 있는 기간보다 길게 둔다. FAILED는 원인 확인을 위해 남긴다.
+ * 같은 메시지가 다시 올 수 있는 기간(outbox 재전송, SQS 재전달)보다 길게 둔다. FAILED는 원인 확인을 위해 남긴다.
  */
 @Slf4j
 public class InboxCleaner {

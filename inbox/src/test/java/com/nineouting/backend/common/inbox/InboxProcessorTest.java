@@ -26,7 +26,7 @@ class InboxProcessorTest {
     private static final LocalDateTime NOW_LOCAL = LocalDateTime.ofInstant(NOW, ZoneOffset.UTC);
 
     private final InboxEventRepository repository = mock(InboxEventRepository.class);
-    private final InboxProperties properties = new InboxProperties(List.of("t"), null, 10, 3, Duration.ofSeconds(5), null);
+    private final InboxProperties properties = new InboxProperties("queue", 10, 3, Duration.ofSeconds(5), null);
     private final List<String> handled = new ArrayList<>();
     private final RecordingTransactionManager transactions = new RecordingTransactionManager();
 

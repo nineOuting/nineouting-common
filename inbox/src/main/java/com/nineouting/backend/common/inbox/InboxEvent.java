@@ -15,7 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
- * Kafka로 받은 이벤트. 받자마자 저장하고(중복이면 버림) 처리는 따로 한다.
+ * SQS로 받은 이벤트. 받자마자 저장하고(중복이면 버림) 처리는 따로 한다.
  * 처리한 이벤트도 중복 확인을 위해 일정 기간 남겨 둔다.
  * 테이블(inbox_events)은 각 서비스가 Flyway로 만든다 (README의 DDL).
  */
