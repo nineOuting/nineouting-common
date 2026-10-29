@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.0](https://github.com/nineOuting/nineouting-common/compare/v0.9.0...v0.10.0) (2026-10-29)
+
+
+### Features
+
+* 서비스 간 조회에 타임아웃·재시도 ([a28bbbf](https://github.com/nineOuting/nineouting-common/commit/a28bbbf8d9d3be45c79e8caa0d78b3aca43424b6))
+* 서비스 간 조회에 타임아웃·재시도 ([#49](https://github.com/nineOuting/nineouting-common/issues/49)) ([4fae3c9](https://github.com/nineOuting/nineouting-common/commit/4fae3c9b4553d0c9d9e3e409cac13cb7ba2576f1))
+
 ## [0.9.0](https://github.com/nineOuting/nineouting-common/compare/v0.8.0...v0.9.0) (2026-10-28)
 
 
