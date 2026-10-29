@@ -9,10 +9,13 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.junit.jupiter.api.AfterEach;
@@ -113,8 +116,46 @@ class ClientTest {
                 .extracting("errorCode.code").isEqualTo("WORKSPACE_SERVICE_UNAVAILABLE");
     }
 
+    @Test
+    void 응답이_늦으면_한_번_더_부르고_또_늦으면_503이다() throws IOException {
+        startServer();
+        AtomicInteger calls = new AtomicInteger();
+        server.createContext("/internal/folders/7/members", exchange -> {
+            if (calls.incrementAndGet() == 1) {
+                sleep(1000);
+            }
+            respond(exchange, 200, "{\"success\":true,\"data\":[3],\"message\":\"\"}");
+        });
+        ClientProperties properties = new ClientProperties(null, baseUrl(), null, Duration.ofMillis(300));
+        WorkspaceClient client = new WorkspaceClient(
+                ClientAutoConfiguration.client(RestClient.builder(), properties).baseUrl(baseUrl()).build());
+
+        assertThat(client.folderMembers(7L)).containsExactly(3L);
+        assertThat(calls).hasValue(2);
+
+        server.createContext("/internal/folders/8/members", exchange -> {
+            calls.incrementAndGet();
+            sleep(1000);
+            respond(exchange, 200, "{\"success\":true,\"data\":[],\"message\":\"\"}");
+        });
+        assertThatThrownBy(() -> client.folderMembers(8L))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode.code").isEqualTo("WORKSPACE_SERVICE_UNAVAILABLE");
+        assertThat(calls).hasValue(4);
+    }
+
+    private static void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
     private void startServer() throws IOException {
         server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        // 늦은 응답을 기다리는 동안 다음 요청도 받는다
+        server.setExecutor(Executors.newCachedThreadPool());
         server.start();
     }
 
