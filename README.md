@@ -244,6 +244,8 @@ nineouting:
   clients:
     user-service-url: ${USER_SERVICE_URL:http://localhost:8081}            # → UserClient
     workspace-service-url: ${WORKSPACE_SERVICE_URL:http://localhost:8082}  # → WorkspaceClient
+    connect-timeout: 2s   # 기본값. 연결 타임아웃
+    read-timeout: 5s      # 기본값. 응답 타임아웃
 ```
 
 | 부품 | 메서드 | 실패 |
@@ -252,6 +254,7 @@ nineouting:
 | `WorkspaceClient` | `access(folderId, userId)`, `folderMembers(folderId)`, `accessibleFolders(userId)` | 없는 폴더 → `404 NOT_FOUND`, 연결 불가 → `503 WORKSPACE_SERVICE_UNAVAILABLE` |
 
 - 서비스에 `spring-boot-starter-restclient`가 있어야 한다 (추적 헤더가 자동으로 붙는다).
+- 연결 실패·응답 시간 초과면 한 번 더 부른다 (조회만 하므로 다시 불러도 안전). 또 실패하면 위의 503
 - 테스트에서는 `@MockitoBean UserClient`처럼 가짜로 바꿔 쓴다.
 
 ## api-docs 설정
