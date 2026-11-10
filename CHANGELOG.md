@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.0](https://github.com/nineOuting/nineouting-common/compare/v0.10.0...v0.11.0) (2026-11-10)
+
+
+### Features
+
+* MeetingFinished에 고른 회의록 양식(templateId) 추가 (REQ-123) ([152c210](https://github.com/nineOuting/nineouting-common/commit/152c210ff1613ed7e0fef61b8f80a18a02ee4a48))
+* MeetingFinished에 고른 회의록 양식(templateId) 추가 (REQ-123) ([#53](https://github.com/nineOuting/nineouting-common/issues/53)) ([774d47d](https://github.com/nineOuting/nineouting-common/commit/774d47d824315d75dc7d3607d96ef6304dddc948))
+
 ## [0.10.0](https://github.com/nineOuting/nineouting-common/compare/v0.9.0...v0.10.0) (2026-10-29)
 
 
