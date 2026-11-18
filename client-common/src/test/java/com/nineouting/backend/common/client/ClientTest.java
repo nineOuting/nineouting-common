@@ -89,7 +89,7 @@ class ClientTest {
     void 폴더_권한_멤버_목록을_해석하고_없는_폴더는_404다() throws IOException {
         startServer();
         server.createContext("/internal/folders/7/access", exchange -> respond(exchange, 200,
-                "{\"success\":true,\"data\":{\"folderId\":7,\"workspaceId\":1,\"allowed\":true},\"message\":\"\"}"));
+                "{\"success\":true,\"data\":{\"folderId\":7,\"workspaceId\":1,\"allowed\":true,\"owner\":true},\"message\":\"\"}"));
         server.createContext("/internal/folders/7/members", exchange -> respond(exchange, 200,
                 "{\"success\":true,\"data\":[3,4],\"message\":\"\"}"));
         server.createContext("/internal/users/3/folders", exchange -> respond(exchange, 200,
@@ -99,7 +99,7 @@ class ClientTest {
                 "{\"success\":false,\"data\":null,\"message\":\"요청한 대상을 찾을 수 없습니다\",\"code\":\"NOT_FOUND\"}"));
         WorkspaceClient client = new WorkspaceClient(restClient(baseUrl()));
 
-        assertThat(client.access(7L, 3L)).isEqualTo(new FolderAccess(7L, 1L, true));
+        assertThat(client.access(7L, 3L)).isEqualTo(new FolderAccess(7L, 1L, true, true));
         assertThat(client.folderMembers(7L)).containsExactlyInAnyOrder(3L, 4L);
         assertThat(client.accessibleFolders(3L)).containsExactly(new AccessibleFolder(7L, 1L, "팀", null, "기획"));
         assertThatThrownBy(() -> client.access(404L, 3L))
