@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.12.0](https://github.com/nineOuting/nineouting-common/compare/v0.11.0...v0.12.0) (2026-11-18)
+
+
+### Features
+
+* FolderAccess에 폴더 소유자 표시 (REQ-160) ([cf0b1ef](https://github.com/nineOuting/nineouting-common/commit/cf0b1efe8b72bc46025fd4ad6b50f5adc95097d5))
+* FolderAccess에 폴더 소유자 표시 (REQ-160) ([#57](https://github.com/nineOuting/nineouting-common/issues/57)) ([023c586](https://github.com/nineOuting/nineouting-common/commit/023c5864e44e1798c5cf5e830b18c236cf7a3b99))
+
 ## [0.11.0](https://github.com/nineOuting/nineouting-common/compare/v0.10.0...v0.11.0) (2026-11-10)
 
 
